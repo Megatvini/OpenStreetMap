@@ -10,14 +10,15 @@ def is_number(param):
     return True
 
 
-def fix_max_speed(max_speed):
+def fix_max_speed(data):
+    max_speed = data['maxspeed']
     if max_speed == 'none':
-        return 0
+        del data['maxspeed']
     if is_number(max_speed):
         number = int(max_speed)
         if number < 10:
-            return number * 10
-    return max_speed
+            data['maxspeed'] = number * 10
+    return data
 
 
 street_pattern = re.compile('(( St\.)|( st\.)|( St)|( st)|( Str\.)|( str\.)|( Str)|( str)|( street))$')
@@ -36,7 +37,7 @@ def fix_street_address(street):
 
 def fixed(data):
     if 'maxspeed' in data:
-        data['maxspeed'] = fix_max_speed(data['maxspeed'])
+        data = fix_max_speed(data)
     if 'addr:street' in data:
         data['addr:street'] = fix_street_address(data['addr:street'])
 
