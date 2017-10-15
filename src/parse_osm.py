@@ -31,6 +31,7 @@ def parse_elem(elem, iterator):
     children = defaultdict(list)
 
     while True:
+        # advancing iterator until current element ends
         event, elem = next(iterator)
         if (event, elem.tag) == ('end', elem_tag):
             break
@@ -39,13 +40,16 @@ def parse_elem(elem, iterator):
 
     elem_data = {'elem_tag': elem_tag}
 
+    # accumulate all the data including attributes and tags in one dictionary
     for tag in children['tag']:
         key, value = tag['k'], tag['v']
         elem_data[key] = value
 
+    # save node references
     if len(children['nd']) > 0:
         elem_data['nodes'] = [x['ref'] for x in children['nd']]
 
+    # save members if its a relation
     if len(children['member']) > 0:
         nodes = []
         ways = []
@@ -81,5 +85,9 @@ def parse_all_elems(iterator):
 
 
 def all_elems_iterator():
+    """
+    parses nodes, ways and relations
+    :return: generator for all parsed elements
+    """
     iterator = ET.iterparse(FILE_NAME, events=('start', 'end'))
     return parse_all_elems(iterator)
