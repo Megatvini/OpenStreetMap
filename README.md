@@ -70,7 +70,7 @@ def fix_street_address(street):
 ## Overview of the data
 
 ### Size of the file
-Exported data in xml format was 110 megabytes
+Exported data in xml format was 110 megabytes  
 Tbilisi.osm  -------------------- 110mb
 
 ### number of documents
@@ -78,11 +78,11 @@ Tbilisi.osm  -------------------- 110mb
 603670
 
 ### number of nodes:
-\> db.Elements.find({'elem_tag': 'node'}).count()
+\> db.Elements.find({'elem_tag': 'node'}).count()   
 544064
 
 ### number of ways:
-\> db.Elements.find({'elem_tag': 'way'}).count()
+\> db.Elements.find({'elem_tag': 'way'}).count()  
 58837
 
 ### number of unique users:
@@ -123,9 +123,6 @@ Lets see the most active years
 ```javascript
 db.Elements.aggregate([
 {
-    '$match': {'elem_tag': 'node'}
-},
-{
     '$group': {
        '_id': {'year': {'$year': "$timestamp"}},
        'count': {'$sum': 1}
@@ -137,18 +134,40 @@ db.Elements.aggregate([
 ```
 ```javascript
 [
-{"_id": {"year": 2010}, "count": 181844.0},
-{"_id": {"year": 2011}, "count": 67169.0},
-{"_id": {"year": 2012}, "count": 61239.0},
-{"_id": {"year": 2016}, "count": 48824.0},
-{"_id": {"year": 2014}, "count": 48757.0},
-{"_id": {"year": 2017}, "count": 42483.0},
-{"_id": {"year": 2015}, "count": 38813.0},
-{"_id": {"year": 2013}, "count": 33778.0},
-{"_id": {"year": 2009}, "count": 14386.0},
-{"_id": {"year": 2008}, "count": 6771.0}
+{"_id": {"year": 2010}, "count": 197011.0},
+{"_id": {"year": 2011}, "count": 71760.0},
+{"_id": {"year": 2012}, "count": 69356.0},
+{"_id": {"year": 2014}, "count": 55842.0},
+{"_id": {"year": 2016}, "count": 54386.0},
+{"_id": {"year": 2017}, "count": 52347.0},
+{"_id": {"year": 2015}, "count": 43357.0},
+{"_id": {"year": 2013}, "count": 38043.0},
+{"_id": {"year": 2009}, "count": 14651.0},
+{"_id": {"year": 2008}, "count": 6917.0}
 ]
 ```
 So, 2010 was by far the most active year in terms of new entries and it has been relatively low in past years. However this might not be negative thing, because it could be caused by the data becoming relatively complete
 
 
+## Other ideas about the dataset
+
+### Some Georgian names are written with latin letters
+```javascript
+db.Elements.find({'name:ka': {'$regex': '[a-zA-Z]{2,}'}}, {'name:ka': 1, '_id': 0})
+```
+```javascript
+[
+{"name:ka": "Stepantsminda, Gudauri (E 117, ს 3)"},
+{"name:ka": "Radisson Blu Iveria Hotel"},
+{"name:ka": "Rustaveli"},
+{"name:ka": "KGB"},
+{"name:ka": "Dilolla"},
+{"name:ka": "Rainers Pizzeria & Beergarden"},
+{"name:ka": "Dublin"},
+...
+]
+```
+The problem with this is that mapping from latin to Georgian letters is not trivial is some cases.
+Fox example letter `M` always corresponds to Georgian `მ` but combination `ch` can be encoding `ჩ` and `ჭ`. 
+Using dictionaries for checking all the possible combinations of mapping can be useful, 
+but this would not be 100% accurate, especially in case of spelling errors.     
