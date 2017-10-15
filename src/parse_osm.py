@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 import xml.etree.ElementTree as ET
 
-FILE_NAME = 'sapmle.osm'
+FILE_NAME = 'tbilisi.osm'
 
 
 def fix_types(data):
@@ -25,13 +25,13 @@ def fix_types(data):
     return data
 
 
-def parse_elem(elem, tree):
+def parse_elem(elem, iterator):
     elem_tag = elem.tag
     attributes = elem.attrib
     children = defaultdict(list)
 
     while True:
-        event, elem = next(tree)
+        event, elem = next(iterator)
         if (event, elem.tag) == ('end', elem_tag):
             break
         if event == 'start':
@@ -62,29 +62,24 @@ def parse_elem(elem, tree):
     return elem_data
 
 
-def parse_elems(elem, tree):
+def parse_elems(elem, iterator):
     if elem.tag in ['node', 'way', 'relation']:
-        yield parse_elem(elem, tree)
+        yield parse_elem(elem, iterator)
     else:
-        while next(tree)[0] != 'end':
+        while next(iterator)[0] != 'end':
             pass
 
 
-def parse_all_elems(tree):
+def parse_all_elems(iterator):
     while True:
         try:
-            event, elem = next(tree)
+            event, elem = next(iterator)
             if event == 'start':
-                yield from parse_elems(elem, tree)
+                yield from parse_elems(elem, iterator)
         except StopIteration:
             break
 
 
-def main():
-    tree = ET.iterparse(FILE_NAME, events=('start', 'end'))
-    for data in parse_all_elems(tree):
-        print(data['elem_tag'])
-
-
-if __name__ == '__main__':
-    main()
+def all_elems_iterator():
+    iterator = ET.iterparse(FILE_NAME, events=('start', 'end'))
+    return parse_all_elems(iterator)
